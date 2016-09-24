@@ -3,8 +3,6 @@ services:
   syncserver:
     build: ./docker
     volumes:
-      - ./logs:/var/logs/apache2
-      - ./syncserver.ini:/usr/local/apache2/syncserver/syncserver.ini
-      - ./data/:/home/sync-user
+      - ./sync:/sync
     ports:
       - 5000:80

@@ -10,12 +10,22 @@ RUN \
     cd syncserver &&\
     make build
 
-ADD host.conf /usr/local/apache2/host.conf
-
 RUN \
-    echo "Include /usr/local/apache2/host.conf" >> /usr/local/apache2/conf/httpd.conf &&\
-    adduser --system sync-user --group &&\
-    chown sync-user:sync-user /usr/local/apache2/syncserver -R &&\
-    mkdir -p /var/log/apache2 /var/run/apache2/
+    DEBIAN_FRONTEND=noninteractive apt-get purge -y --auto-remove git-core g++ make
 
+ADD setup.sh /setup.sh
+RUN \
+    mkdir -p /sync &&\
+    mv /usr/local/apache2/syncserver/syncserver.ini /usr/local/apache2/syncserver/syncserver.ini.bak &&\
+    chmod +x /setup.sh
+    
+ADD syncserver.ini /usr/local/apache2/syncserver/syncserver.ini.orig
+ADD host.conf /usr/local/apache2/host.conf
+RUN \
+    mkdir -p /var/run/apache2 &&\
+    echo "Include /usr/local/apache2/host.conf" >> /usr/local/apache2/conf/httpd.conf &&\
+    adduser --system sync-user --group
+    
 EXPOSE 80
+
+ENTRYPOINT ["/setup.sh"]

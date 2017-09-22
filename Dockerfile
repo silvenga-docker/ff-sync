@@ -13,14 +13,14 @@ RUN \
 RUN \
     DEBIAN_FRONTEND=noninteractive apt-get purge -y --auto-remove git-core g++ make
 
-ADD setup.sh /setup.sh
+COPY files/setup.sh /setup.sh
 RUN \
     mkdir -p /sync &&\
     mv /usr/local/apache2/syncserver/syncserver.ini /usr/local/apache2/syncserver/syncserver.ini.bak &&\
     chmod +x /setup.sh
     
-ADD syncserver.ini /usr/local/apache2/syncserver/syncserver.ini.orig
-ADD host.conf /usr/local/apache2/host.conf
+COPY files/syncserver.ini /usr/local/apache2/syncserver/syncserver.ini.orig
+COPY files/host.conf /usr/local/apache2/host.conf
 RUN \
     mkdir -p /var/run/apache2 &&\
     echo "Include /usr/local/apache2/host.conf" >> /usr/local/apache2/conf/httpd.conf &&\

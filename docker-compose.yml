@@ -1,7 +1,7 @@
 version: '2'
 services:
   syncserver:
-    build: ./docker
+    build: .
     volumes:
       - ./sync:/sync
     ports:

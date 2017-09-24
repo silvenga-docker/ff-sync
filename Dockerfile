@@ -1,31 +1,33 @@
-FROM httpd:2.4
-MAINTAINER Mark Lopez <m@silvenga.com>
+FROM alpine:3.6
 
-RUN \ 
-    DEBIAN_FRONTEND=noninteractive apt-get update &&\
-	DEBIAN_FRONTEND=noninteractive apt-get install -y libapache2-mod-wsgi python-dev git-core python-virtualenv g++ make
+# Based on https://github.com/nrobinaubertin/dockerfiles/blob/master/firefox_syncserver/Dockerfile
 
-RUN \
-    git clone https://github.com/mozilla-services/syncserver &&\
-    cd syncserver &&\
-    make build
+ARG SYNC_VERSION=1.6.0
+ENV URL=http://localhost:5000
+ENV UID=791 GID=791
 
-RUN \
-    DEBIAN_FRONTEND=noninteractive apt-get purge -y --auto-remove git-core g++ make
+RUN set -xe \
+    && addgroup -g $GID -S app \
+    && adduser -S -D -u $UID -G app app \
+    && apk add --no-cache -U python su-exec make libstdc++ \
+    && apk add --no-cache --virtual .build-deps py-pip py-virtualenv g++ gcc python-dev openssl \
+    && mkdir /sync \
+    && cd /sync \
+    && wget https://github.com/mozilla-services/syncserver/archive/$SYNC_VERSION.tar.gz \
+    && tar -xzf $SYNC_VERSION.tar.gz \
+    && rm -f $SYNC_VERSION.tar.gz \
+    && mv syncserver-$SYNC_VERSION server \
+    && cd /sync/server \
+    && make build \
+    && chown -R "${UID}:${GID}" /sync/server \
+    && apk del .build-deps \
+    && mkdir -p /sync/data
 
-COPY files/setup.sh /setup.sh
-RUN \
-    mkdir -p /sync &&\
-    mv /usr/local/apache2/syncserver/syncserver.ini /usr/local/apache2/syncserver/syncserver.ini.bak &&\
-    chmod +x /setup.sh
-    
-COPY files/syncserver.ini /usr/local/apache2/syncserver/syncserver.ini.orig
-COPY files/host.conf /usr/local/apache2/host.conf
-RUN \
-    mkdir -p /var/run/apache2 &&\
-    echo "Include /usr/local/apache2/host.conf" >> /usr/local/apache2/conf/httpd.conf &&\
-    adduser --system sync-user --group
-    
-EXPOSE 80
+COPY files/init.sh /init.sh
 
-ENTRYPOINT ["/setup.sh"]
+VOLUME [ "/sync/data" ]
+
+EXPOSE 5000
+USER app
+
+CMD ["/bin/sh", "/init.sh"]

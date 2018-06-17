@@ -2,7 +2,7 @@ FROM alpine:3.6
 
 # Based on https://github.com/nrobinaubertin/dockerfiles/blob/master/firefox_syncserver/Dockerfile
 
-ARG SYNC_VERSION=1.6.0
+ARG SYNC_VERSION=1.8.0
 ENV URL=http://localhost:5000
 ENV UID=791 GID=791
 

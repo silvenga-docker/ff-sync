@@ -1,4 +1,4 @@
-FROM alpine:3.6
+FROM alpine:3.7
 
 # Based on https://github.com/nrobinaubertin/dockerfiles/blob/master/firefox_syncserver/Dockerfile
 
@@ -9,8 +9,8 @@ ENV UID=791 GID=791
 RUN set -xe \
     && addgroup -g $GID -S app \
     && adduser -S -D -u $UID -G app app \
-    && apk add --no-cache -U python su-exec make libstdc++ \
-    && apk add --no-cache --virtual .build-deps py-pip py-virtualenv g++ gcc python-dev openssl \
+    && apk add --no-cache -U python2 su-exec make libstdc++ openssl \
+    && apk add --no-cache --virtual .build-deps py2-pip g++ gcc python2-dev openssl py2-virtualenv libffi-dev openssl-dev \
     && mkdir /sync \
     && cd /sync \
     && wget https://github.com/mozilla-services/syncserver/archive/$SYNC_VERSION.tar.gz \

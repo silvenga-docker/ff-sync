@@ -1,16 +1,15 @@
-FROM alpine:3.9
+FROM python:2.7-alpine
 
-# Based on https://github.com/nrobinaubertin/dockerfiles/blob/master/firefox_syncserver/Dockerfile
-
-ARG SYNC_VERSION=040d642d5740f80cd54fb22fda5ea75296f7c50c
+ARG SYNC_VERSION=c2f17a7bae6306e94e761ec1de18fb669d643f62
 ENV URL=http://localhost:5000
 ENV UID=791 GID=791
 
 RUN set -xe \
     && addgroup -g $GID -S app \
     && adduser -S -D -u $UID -G app app \
-    && apk add --no-cache -U python2 su-exec make libstdc++ openssl \
-    && apk add --no-cache --virtual .build-deps py2-pip g++ gcc python2-dev openssl py2-virtualenv libffi-dev openssl-dev \
+    && apk add --no-cache -U bash dumb-init gcc libstdc++ libffi-dev make mysql-dev musl-dev ncurses-dev openssl-dev g++ \
+    && pip install --upgrade pip \
+    && pip install virtualenv \
     && mkdir /sync \
     && cd /sync \
     && wget https://github.com/mozilla-services/syncserver/archive/$SYNC_VERSION.tar.gz \
@@ -20,7 +19,7 @@ RUN set -xe \
     && cd /sync/server \
     && make build \
     && chown -R "${UID}:${GID}" /sync/server \
-    && apk del .build-deps \
+    && apk del g++ \
     && mkdir -p /sync/data
 
 COPY files/init.sh /init.sh
@@ -30,4 +29,4 @@ VOLUME [ "/sync/data" ]
 EXPOSE 5000
 USER app
 
-CMD ["/bin/sh", "/init.sh"]
+CMD ["/usr/bin/dumb-init", "/bin/sh", "/init.sh"]

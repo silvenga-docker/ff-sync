@@ -1,5 +1,3 @@
 # ff-sync-docker
 
-## TODO
-
-- [ ] Extra symlink created in logs.
+> This should be migrated to [syncstorage-rs](https://github.com/mozilla-services/syncstorage-rs) at some point.
